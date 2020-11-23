@@ -6,6 +6,7 @@ $ErrorActionPreference = 'Stop'
 
 # Evaluate
 $modification_date = $eventGridEvent.eventTime
+$eventType = $eventGridEvent.eventType
 $resourceId = $eventGridEvent.data.resourceUri
 Write-Verbose "resourceId = $resourceId"
 $caller = $eventGridEvent.data.claims.name
@@ -19,7 +20,7 @@ if ($null -eq $caller) {
     }
 }
 else {
-    #Prefer to output the UPN for users
+    #Prefer to output the UPN for users, Refere to : https://docs.microsoft.com/en-us/azure/event-grid/event-schema-resource-groups
     $caller = $eventGridEvent.data.claims."http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn"
     if ($null -eq $caller) {
         $caller = $eventGridEvent.data.claims.name
@@ -52,10 +53,31 @@ foreach ($case in $ignoreRgNames) {
     }
 }
 
+if ($eventType -eq "Microsoft.Resources.ResourceDeleteSuccess") {
+    $resource = Get-AzResource -ResourceId $($resourceId.Split("/")[0..8] -join "/") -ErrorVariable notPresent -ErrorAction SilentlyContinue
+    if ($notPresent) {
+        Write-Host "Skipping as resource has been deleted for resourceId : $resourceId"
+        exit;
+    }
+    else { $resourceId = $resource.Id }
+}
+else {
+    if ($resourceId.Split("/").Count -eq 5) {
+        #Case for Resource Groups
+        $resource = Get-AzResourceGroup -ResourceId $resourceId
+        $resourceId = $resource.ResourceId
+    }
+    else {
+        #Case for Resources
+        $resource = Get-AzResource -ResourceId $resourceId
+        $resourceId = $resource.Id
+    }
+    
+}
+
 # Variable
-$resource = Get-AzResource -ResourceId $resourceId
-$RGTags = (Get-AzResourceGroup -Name $resource.ResourceGroupName).Tags
 $tags = (Get-AzTag -ResourceId $resourceId).Properties
+$RGTags = (Get-AzResourceGroup -Name $resource.ResourceGroupName).Tags
 $resourcetags = [System.Collections.Hashtable]::new($tags.TagsProperty) #convert dictionary to hashtable
 
 # Function
@@ -73,18 +95,18 @@ Function Merge-Hashtables {
 if (!($tags.TagsProperty.ContainsKey('creator')) -or ($null -eq $tags)) {
     Write-Host "Tag creator doesn't exist"
     $newtags = @{
-        creator        = $caller
-        creationdate   = $modification_date	
-        editor         = $caller
-        deploymentdate = $modification_date	
+        creator         = $caller
+        creationdate    = $modification_date	
+        editor          = $caller
+        lasteditiondate = $modification_date	
     }
     $messsage = "Just added creator tag with user: $caller on resourceId : $resourceId"
 }
 else {
     Write-Host "Tag creator already exists"
     $newtags = @{
-        editor         = $caller
-        deploymentdate = $modification_date	
+        editor          = $caller
+        lasteditiondate = $modification_date	
     }
     $messsage = "Just added editor tag with user: $caller on resourceId : $resourceId"
 }

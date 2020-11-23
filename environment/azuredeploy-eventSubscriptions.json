@@ -47,7 +47,8 @@
                 },
                 "filter": {
                     "includedEventTypes": [
-                        "Microsoft.Resources.ResourceWriteSuccess"
+                        "Microsoft.Resources.ResourceWriteSuccess",
+                        "Microsoft.Resources.ResourceDeleteSuccess"
                     ],
                     "advancedFilters": [
                         {
