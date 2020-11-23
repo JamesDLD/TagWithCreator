@@ -16,6 +16,20 @@
         }
     },
     "variables": {
+        "appInsights_tags": {
+            "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', parameters('functionName'))]": "Resource",
+            "displayName": "AppInsightsComponent",
+            "deploymentmode": "armtemplate"
+        },
+        "serverfarms_tags": {
+            "deploymentmode": "armtemplate"
+        },
+        "storageAccounts_tags": {
+            "deploymentmode": "armtemplate"
+        },
+        "sites_tags": {
+            "deploymentmode": "armtemplate"
+        }
     },
     "resources": [
         {
@@ -23,6 +37,7 @@
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-06-01",
             "location": "[resourceGroup().location]",
+            "tags": "[union(resourceGroup().tags,variables('storageAccounts_tags'))]",
             "kind": "StorageV2",
             "sku": {
                 "name": "Standard_LRS",
@@ -34,11 +49,11 @@
             "apiVersion": "2018-02-01",
             "name": "[parameters('appServicePlanName')]",
             "location": "[resourceGroup().location]",
+            "tags": "[union(resourceGroup().tags,variables('serverfarms_tags'))]",
             "sku": {
                 "name": "Y1",
                 "tier": "Dynamic",
                 "size": "Y1"
-
             },
             "kind": "functionapp"
         },
@@ -47,10 +62,7 @@
             "name": "[parameters('appInsightsName')]",
             "type": "Microsoft.Insights/components",
             "location": "[resourceGroup().location]",
-            "tags": {
-                "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', parameters('functionName'))]": "Resource",
-                "displayName": "AppInsightsComponent"
-            },
+            "tags": "[union(resourceGroup().tags,variables('appInsights_tags'))]",
             "properties": {
                 "applicationId": "[parameters('appInsightsName')]"
             }
@@ -60,6 +72,7 @@
             "type": "Microsoft.Web/sites",
             "apiVersion": "2018-11-01",
             "location": "[resourceGroup().location]",
+            "tags": "[union(resourceGroup().tags,variables('sites_tags'))]",
             "kind": "functionapp",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
@@ -67,7 +80,11 @@
             ],
             "properties": {
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
+                "httpsOnly": true,
                 "siteConfig": {
+                    "http20Enabled": true,
+                    "minTlsVersion": "1.2",
+                    "ftpsState": "Disabled",
                     "appSettings": [
                         {
                             "name": "AzureWebJobsDashboard",
@@ -115,6 +132,10 @@
         "managedIdentityId": {
             "type": "string",
             "value": "[reference(resourceId('Microsoft.Web/sites', parameters('functionName')), '2019-08-01', 'full').identity.principalId]"
+        },
+        "resourceId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Web/sites', parameters('functionName'))]"
         }
     }
 }
