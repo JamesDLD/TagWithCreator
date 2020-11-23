@@ -19,10 +19,10 @@ $params = @{
 $AzureRmContext = Get-AzSubscription -SubscriptionName $AzureRmSubscriptionName | Set-AzContext -ErrorAction Stop
 Select-AzSubscription -Name $AzureRmSubscriptionName -Context $AzureRmContext -Force -ErrorAction Stop
 
-# Creating the Resource Grou if needed 
+# Creating the Resource Group if needed 
 Get-AzResourceGroup -Name $resourceGroupName -ErrorVariable notPresent -ErrorAction SilentlyContinue
 if ($notPresent) {
-    New-AzResourceGroup -Name $resourceGroupName -Location $location -Force -Tag @{creator = $AzureRmContext.Account.Id }
+    New-AzResourceGroup -Name $resourceGroupName -Location $location -Force -Tag @{ creator = $AzureRmContext.Account.Id }
 }
 
 ## Deploy the function App
