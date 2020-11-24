@@ -10,6 +10,13 @@
         },
         "eventGridSubscriptionName": {
             "type": "string"
+        },
+        "resourceUrisToExclude": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "List of resource Uris to exclude, not supported yet. Feature request done to support this at the EventGrid system Topic level --> https://feedback.azure.com/forums/909934-azure-event-grid/suggestions/42036640-support-stringnotcontains-advanced-filters-on-even?WT.mc_id=AZ-MVP-5003548"
+            }
         }
     },
     "variables": {
@@ -58,6 +65,11 @@
                             "operatorType": "StringNotIn",
                             "key": "data.operationName"
                         }
+                        // ,{ feature request done to support this at the EventGrid system Topic level --> https://feedback.azure.com/forums/909934-azure-event-grid/suggestions/42036640-support-stringnotcontains-advanced-filters-on-even?WT.mc_id=AZ-MVP-5003548
+                        //     "values": "[parameters('resourceUrisToExclude')]",
+                        //     "operatorType": "StringNotContains",
+                        //     "key": "data.resourceUri"
+                        // }
                     ]
                 },
                 "eventDeliverySchema": "EventGridSchema",

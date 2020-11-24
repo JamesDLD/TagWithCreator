@@ -8,7 +8,6 @@ $ErrorActionPreference = 'Stop'
 $modification_date = $eventGridEvent.eventTime
 $eventType = $eventGridEvent.eventType
 $resourceId = $eventGridEvent.data.resourceUri
-Write-Verbose "resourceId = $resourceId"
 $caller = $eventGridEvent.data.claims.name
 if ($null -eq $caller) {
     if ($eventGridEvent.data.authorization.evidence.principalType -eq "ServicePrincipal") {
@@ -27,6 +26,7 @@ else {
         Write-Host "User : $caller doesn't share it's upn."
     }
 }
+Write-Host "$caller - resourceId = $resourceId"
 
 if (($null -eq $caller) -or ($null -eq $resourceId)) {
     Write-Host "Skipping event as ResourceId or Caller is null"
@@ -37,7 +37,8 @@ elseif ($caller -eq $env:WEBSITE_SITE_NAME) {
     exit;
 }
 
-$ignoreTypes = @("providers/Microsoft.Resources/deployments", "providers/Microsoft.Resources/tags", "providers/Microsoft.Network/frontdoor", "providers/microsoft.insights/autoscalesettings", "Microsoft.Compute/virtualMachines/extensions", "Microsoft.Compute/restorePointCollections", "Microsoft.Classic")
+# feature request done to support this at the EventGrid system Topic level --> https://feedback.azure.com/forums/909934-azure-event-grid/suggestions/42036640-support-stringnotcontains-advanced-filters-on-even?WT.mc_id=AZ-MVP-5003548
+$ignoreTypes = @("providers/Microsoft.Resources/deployments", "providers/Microsoft.Resources/tags", "providers/Microsoft.Network/frontdoor", "providers/microsoft.insights/autoscalesettings", "providers/Microsoft.Compute/virtualMachines/extensions", "providers/Microsoft.Compute/restorePointCollections", "providers/Microsoft.EventGrid/eventSubscriptions", "Microsoft.Classic")
 foreach ($case in $ignoreTypes) {
     if ($resourceId -match $case) {
         Write-Host "Skipping event as resourceId contains: $case for resourceId : $resourceId"
@@ -45,6 +46,7 @@ foreach ($case in $ignoreTypes) {
     }
 }
 
+# feature request done to support this at the EventGrid system Topic level --> https://feedback.azure.com/forums/909934-azure-event-grid/suggestions/42036640-support-stringnotcontains-advanced-filters-on-even?WT.mc_id=AZ-MVP-5003548
 $ignoreRgNames = @("Add-Here-Rg-To-Exclude-If-Needed")
 foreach ($case in $ignoreRgNames) {
     if ($resourceId -match $case) {
@@ -72,12 +74,23 @@ else {
         $resource = Get-AzResource -ResourceId $resourceId
         $resourceId = $resource.Id
     }
-    
 }
 
 # Variable
-$tags = (Get-AzTag -ResourceId $resourceId).Properties
 $RGTags = (Get-AzResourceGroup -Name $resource.ResourceGroupName).Tags
+$AzTags = Get-AzTag -ResourceId $resourceId -ErrorVariable notPresent -ErrorAction SilentlyContinue
+#Check Tag operation has been Implemented
+if ($notPresent) {
+    # Try on the master resource as the resourceId might be the one of a property of this resource
+    $resourceId = $($resourceId.Split("/")[0..$($resourceId.Split("/").Count - 3)] -join "/")
+    $AzTags = Get-AzTag -ResourceId $resourceId -ErrorVariable notPresent -ErrorAction SilentlyContinue
+    if ($notPresent) {
+        Write-Error "Tag operation hasn't been Implemented for resourceId : $resourceId"
+        Exit;
+    }
+}
+Write-Host "Tag operation has been Implemented for resourceId : $resourceId"
+$tags = $AzTags.Properties
 $resourcetags = [System.Collections.Hashtable]::new($tags.TagsProperty) #convert dictionary to hashtable
 
 # Function

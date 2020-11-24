@@ -55,7 +55,7 @@ $file = (Get-ChildItem .\functions.zip).FullName
 Publish-AzWebApp -ResourceGroupName $resourceGroupName -Name $functionName -ArchivePath $file -Verbose -Force
 Remove-Item $file -Force
 
-# Deploy the EventGrid system Topic
+# Deploy the EventGrid system Topic, feature request to use : resourceUrisToExclude --> https://feedback.azure.com/forums/909934-azure-event-grid/suggestions/42036640-support-stringnotcontains-advanced-filters-on-even?WT.mc_id=AZ-MVP-5003548
 $params = @{
     resourceId                = $output.Outputs.resourceId.Value 
     systemTopicsName          = $systemTopicsName
