@@ -60,10 +60,10 @@
                     "advancedFilters": [
                         {
                             "values": [
-                                "Microsoft.Resources/tags/write"
+                                "[replace(reference(parameters('resourceId'), '2019-08-01', 'full').identity.principalId,'-','')]"
                             ],
                             "operatorType": "StringNotIn",
-                            "key": "data.operationName"
+                            "key": "data.authorization.evidence.principalId"
                         }
                         // ,{ feature request done to support this at the EventGrid system Topic level --> https://feedback.azure.com/forums/909934-azure-event-grid/suggestions/42036640-support-stringnotcontains-advanced-filters-on-even?WT.mc_id=AZ-MVP-5003548
                         //     "values": "[parameters('resourceUrisToExclude')]",
