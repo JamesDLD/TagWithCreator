@@ -133,6 +133,14 @@
             "type": "string",
             "value": "[reference(resourceId('Microsoft.Web/sites', parameters('functionName')), '2019-08-01', 'full').identity.principalId]"
         },
+        "outboundIpAddresses": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Web/sites', parameters('functionName')), '2019-08-01', 'full').properties.outboundIpAddresses]"
+        },
+        "possibleOutboundIpAddresses": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Web/sites', parameters('functionName')), '2019-08-01', 'full').properties.possibleOutboundIpAddresses]"
+        },
         "resourceId": {
             "type": "string",
             "value": "[resourceId('Microsoft.Web/sites', parameters('functionName'))]"

@@ -31,6 +31,16 @@ $output = New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName `
     -TemplateParameterObject $params `
     -confirm
 
+## Storage Account Firewall Rules, Ref. https://docs.microsoft.com/en-us/azure/azure-functions/ip-addresses
+### WARNING THIS IS NOT SUPPORTED YET --> https://github.com/Azure/Azure-Functions/issues/1349
+<#
+$IpRules = $($($output.Outputs.possibleOutboundIpAddresses.Value) + "," + $($output.Outputs.outboundIpAddresses.Value)).Split(",") | Select-Object -Unique
+$PsIpRule = @(
+    $IpRules | ForEach-Object { @{IPAddressOrRange = $_; Action = "allow" } }
+)
+Update-AzStorageAccountNetworkRuleSet -ResourceGroupName $resourceGroupName -AccountName $storageAccountName -IpRule $PsIpRule -DefaultAction Deny -Bypass Azureservices -ErrorAction Stop
+#>
+
 ## Assign privileges
 New-AzRoleAssignment -RoleDefinitionName "Reader" -ObjectId $output.Outputs.managedIdentityId.Value -ErrorAction SilentlyContinue -Verbose
 New-AzRoleAssignment -RoleDefinitionName "Tag Contributor" -ObjectId $output.Outputs.managedIdentityId.Value -ErrorAction SilentlyContinue -Verbose
