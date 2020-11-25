@@ -64,6 +64,13 @@
                             ],
                             "operatorType": "StringNotIn",
                             "key": "data.authorization.evidence.principalId"
+                        },
+                        {
+                            "values": [
+                                "[subscription().id]"
+                            ],
+                            "operatorType": "StringNotIn",
+                            "key": "data.resourceUri"
                         }
                         // ,{ feature request done to support this at the EventGrid system Topic level --> https://feedback.azure.com/forums/909934-azure-event-grid/suggestions/42036640-support-stringnotcontains-advanced-filters-on-even?WT.mc_id=AZ-MVP-5003548
                         //     "values": "[parameters('resourceUrisToExclude')]",

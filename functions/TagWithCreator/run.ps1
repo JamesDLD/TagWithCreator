@@ -77,7 +77,6 @@ else {
 }
 
 # Variable
-$RGTags = (Get-AzResourceGroup -Name $resource.ResourceGroupName).Tags
 $AzTags = Get-AzTag -ResourceId $resourceId -ErrorVariable notPresent -ErrorAction SilentlyContinue
 #Check Tag operation has been Implemented
 if ($notPresent) {
@@ -92,6 +91,8 @@ if ($notPresent) {
 Write-Host "Tag operation has been Implemented for resourceId : $resourceId"
 $tags = $AzTags.Properties
 $resourcetags = [System.Collections.Hashtable]::new($tags.TagsProperty) #convert dictionary to hashtable
+$SubRags = [System.Collections.Hashtable]::new((Get-AzTag -ResourceId "/subscriptions/$($resourceId.Split("/")[2])").Properties.TagsProperty) #convert dictionary to hashtable
+$RGTags = (Get-AzResourceGroup -Name $resource.ResourceGroupName).Tags
 
 # Function
 Function Merge-Hashtables {
@@ -124,6 +125,6 @@ else {
     $messsage = "Just added editor tag with user: $caller on resourceId : $resourceId"
 }
 
-$targetTags = $RGTags, $resourcetags, $newtags | Merge-Hashtables #$newtags overwrites $resourcetags that overwites $RGTags
+$targetTags = $SubRags, $RGTags, $resourcetags, $newtags | Merge-Hashtables #$newtags overwrites $resourcetags that overwites $RGTags that overwrites $SubRags
 Update-AzTag -ResourceId $resourceId -Operation Merge -Tag $targetTags
 Write-Host $messsage
