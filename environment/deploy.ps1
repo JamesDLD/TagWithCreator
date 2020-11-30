@@ -1,11 +1,12 @@
 ## Variable
-$AzureRmSubscriptionName = "sub-sbx-001"             # <-- REPLACE the variable values with your own values.
-$resourceGroupName = "rg-in-sbx-monitor-001"         # <-- 
-$functionName = "func-in-sbx-monitor-001"            # <--
-$appServicePlanName = "plan-in-sbx-monitor-001"      # <--
-$storageAccountName = "stinsbxmonitor001"            # <-- Ensure the storage account name is unique
-$appInsightsName = "appi-in-sbx-monitor-001"         # <--
-$systemTopicsName = "evgst-in-sbx-monitor-001"       # <--
+$env = "sbx"
+$AzureRmSubscriptionName = "sub-$env-001"             # <-- REPLACE the variable values with your own values.
+$resourceGroupName = "rg-in-$env-monitor-001"         # <-- 
+$functionName = "func-in-$env-monitor-001"            # <--
+$appServicePlanName = "plan-in-$env-monitor-001"      # <--
+$storageAccountName = "stin$($env)monitor001"            # <-- Ensure the storage account name is unique
+$appInsightsName = "appi-in-$env-monitor-001"         # <--
+$systemTopicsName = "evgst-in-$env-monitor-001"       # <--
 $location = "francecentral"                          # <-- Ensure that the location is a valid Azure location
 $params = @{
     storageAccountName = $storageAccountName.ToLower()
@@ -17,7 +18,7 @@ $params = @{
 ## Connectivity
 # Login first with Connect-AzAccount if not using Cloud Shell
 $AzureRmContext = Get-AzSubscription -SubscriptionName $AzureRmSubscriptionName | Set-AzContext -ErrorAction Stop
-Select-AzSubscription -Name $AzureRmSubscriptionName -Context $AzureRmContext -Force -ErrorAction Stop
+$Subscription = Select-AzSubscription -Name $AzureRmSubscriptionName -Context $AzureRmContext -Force -ErrorAction Stop
 
 # Creating the Resource Group if needed 
 Get-AzResourceGroup -Name $resourceGroupName -ErrorVariable notPresent -ErrorAction SilentlyContinue
@@ -66,3 +67,22 @@ New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName `
     -TemplateFile .\azuredeploy-eventSubscriptions.json `
     -TemplateParameterObject $params `
     -confirm
+
+## Deploy the Azure Monitor Workbook
+$workbookDisplayName = "Compliance - Tag Workbook - $env"
+$workbookSourceId = "Azure Monitor"
+$workbookType = "workbook"
+#$workbookId = "Existong-Workbok-GUID-To-Use-If-UpdateInplace"
+$workbookSerializedData = (Get-Content -Path ".\azuredeploy-workbook-gallery.json") `
+    -replace "<AppInsightId>", $output.Outputs.appInsightsId.Value `
+    -replace "<SubscriptionId>", $Subscription.Subscription.Id `
+| ConvertFrom-Json
+
+New-AzResourceGroupDeployment -Name $(("$workbookType-$workbookDisplayName").replace(' ', '')) -ResourceGroupName $resourceGroupName `
+    -TemplateFile .\azuredeploy-workbook.json `
+    -workbookDisplayName $workbookDisplayName `
+    -workbookType $workbookType `
+    -workbookSourceId $workbookSourceId `
+    -workbookSerializedData ($workbookSerializedData | ConvertTo-Json -Depth 20) `
+    -Confirm -ErrorAction Stop
+

@@ -38,7 +38,7 @@ elseif ($caller -eq $env:WEBSITE_SITE_NAME) {
 }
 
 # feature request done to support this at the EventGrid system Topic level --> https://feedback.azure.com/forums/909934-azure-event-grid/suggestions/42036640-support-stringnotcontains-advanced-filters-on-even?WT.mc_id=AZ-MVP-5003548
-$ignoreTypes = @("providers/Microsoft.Resources/deployments", "providers/Microsoft.Resources/tags", "providers/Microsoft.Network/frontdoor", "providers/microsoft.insights/autoscalesettings", "providers/Microsoft.Compute/virtualMachines/extensions", "providers/Microsoft.Compute/restorePointCollections", "providers/Microsoft.EventGrid/eventSubscriptions", "Microsoft.Classic")
+$ignoreTypes = @("providers/Microsoft.Resources/deployments", "providers/Microsoft.Resources/tags", "providers/Microsoft.Network/frontdoor", "providers/microsoft.insights/autoscalesettings", "providers/Microsoft.Compute/virtualMachines/extensions", "providers/Microsoft.Compute/restorePointCollections", "providers/Microsoft.EventGrid/eventSubscriptions", "microsoft.classicstorage/storageaccounts", "Microsoft.Classic", "providers/Sendgrid.Email/accounts")
 foreach ($case in $ignoreTypes) {
     if ($resourceId -match $case) {
         Write-Host "Skipping event as resourceId contains: $case for resourceId : $resourceId"

@@ -1,0 +1,785 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "b2cdcb43-e4bc-4ce1-bc74-63faf47e4c97",
+            "version": "KqlParameterItem/1.0",
+            "name": "Subscriptions",
+            "type": 6,
+            "isRequired": true,
+            "multiSelect": true,
+            "quote": "'",
+            "delimiter": ",",
+            "value": [
+              "/subscriptions/<SubscriptionId>"
+            ],
+            "typeSettings": {
+              "additionalResourceOptions": [
+                "value::all"
+              ],
+              "includeAll": true
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            }
+          },
+          {
+            "id": "c7025fe3-4f4a-4657-b950-027d3a5276eb",
+            "version": "KqlParameterItem/1.0",
+            "name": "unTaggableResources",
+            "type": 1,
+            "query": "{\"version\":\"1.0.0\",\"content\":\"[\\\"Microsoft.Compute/virtualMachines/extensions\\\",\\\"microsoft.insights/autoscalesettings\\\",\\\"Microsoft.ClassicNetwork/virtualNetworks\\\",\\\"microsoft.classic\\\",\\\"microsoft.classicstorage/storageaccounts\\\",\\\"sendgrid.email/accounts\\\"]\",\"transformers\":null}",
+            "isHiddenWhenLocked": true,
+            "queryType": 8
+          }
+        ],
+        "style": "pills",
+        "queryType": 8
+      },
+      "name": "parameters - 6"
+    },
+    {
+      "type": 11,
+      "content": {
+        "version": "LinkItem/1.0",
+        "style": "tabs",
+        "links": [
+          {
+            "id": "71a09ec7-cb64-4a84-a767-f86525ee9cf3",
+            "cellValue": "selectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "Overview",
+            "subTarget": "overview",
+            "style": "link"
+          },
+          {
+            "id": "7a11370e-7926-4d37-a4c8-05ca48de5044",
+            "cellValue": "selectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "Inventory",
+            "subTarget": "inventory",
+            "style": "link"
+          },
+          {
+            "id": "f2c9bc7d-3aa1-4f8c-ba5c-6d6c77718975",
+            "cellValue": "selectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "Remediation activity",
+            "subTarget": "remediationActivity",
+            "style": "link"
+          },
+          {
+            "id": "abd9b575-75d3-4cce-92ac-ad44967270c9",
+            "cellValue": "selectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "Remediation detail",
+            "subTarget": "remediationDetail",
+            "style": "link"
+          }
+        ]
+      },
+      "name": "links - 7"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 1,
+            "content": {
+              "json": "# Overview Azure Resources"
+            },
+            "name": "text - 0"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "Resources \n| where \"{unTaggableResources}\" !has type \n| summarize count(type)",
+              "size": 4,
+              "title": "Count of All taggable Resources",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscriptions}"
+              ],
+              "visualization": "tiles",
+              "tileSettings": {
+                "titleContent": {
+                  "formatter": 1
+                },
+                "leftContent": {
+                  "columnMatch": "count_type",
+                  "formatter": 12,
+                  "formatOptions": {
+                    "palette": "blue"
+                  }
+                },
+                "showBorder": true
+              }
+            },
+            "name": "query - Count of All taggable Resources"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where \"{unTaggableResources}\" !has type \n| extend compliant = iff(tags.editor == \"\" or tags.lasteditiondate == \"\" or tags.creationdate == \"\" or tags.creator == \"\",\"Not Compliant\", \"Compliant\")\n| summarize count(type) by compliant",
+              "size": 0,
+              "title": "Tag Compliancy by Resource Count",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscriptions}"
+              ],
+              "visualization": "piechart",
+              "tileSettings": {
+                "titleContent": {
+                  "formatter": 1
+                },
+                "showBorder": false
+              },
+              "graphSettings": {
+                "type": 0,
+                "topContent": {
+                  "columnMatch": "compliant",
+                  "formatter": 1
+                },
+                "centerContent": {
+                  "columnMatch": "count_type",
+                  "formatter": 1,
+                  "numberFormat": {
+                    "unit": 17,
+                    "options": {
+                      "maximumSignificantDigits": 3,
+                      "maximumFractionDigits": 2
+                    }
+                  }
+                }
+              },
+              "chartSettings": {
+                "seriesLabelSettings": [
+                  {
+                    "seriesName": "Compliant",
+                    "color": "green"
+                  },
+                  {
+                    "seriesName": "Not Compliant",
+                    "color": "redBright"
+                  }
+                ]
+              }
+            },
+            "name": "query - Tag Compliancy by Resource Count"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where \"{unTaggableResources}\" !has type \n| extend editor = iff(tags.editor == '', \"Unavailable\", \"Available\")\n| extend lasteditiondate = iff(tags.lasteditiondate == '', \"Unavailable\", \"Available\")\n| extend creator = iff(tags.creator == '', \"Unavailable\", \"Available\")\n| extend creationdate = iff(tags.creationdate == '', \"Unavailable\", \"Available\")\n| summarize count() by editor,lasteditiondate,creator,creationdate",
+              "size": 0,
+              "title": "Overview - Mandatory Tags",
+              "noDataMessageStyle": 5,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscriptions}"
+              ],
+              "visualization": "table",
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "editor",
+                    "formatter": 11
+                  },
+                  {
+                    "columnMatch": "lasteditiondate",
+                    "formatter": 11
+                  },
+                  {
+                    "columnMatch": "creationdate",
+                    "formatter": 11
+                  },
+                  {
+                    "columnMatch": "creator",
+                    "formatter": 11
+                  },
+                  {
+                    "columnMatch": "count_",
+                    "formatter": 8,
+                    "formatOptions": {
+                      "palette": "blue"
+                    }
+                  },
+                  {
+                    "columnMatch": "domain",
+                    "formatter": 11
+                  },
+                  {
+                    "columnMatch": "environment",
+                    "formatter": 11
+                  },
+                  {
+                    "columnMatch": "deploymentmode",
+                    "formatter": 11
+                  },
+                  {
+                    "columnMatch": "owner",
+                    "formatter": 11,
+                    "formatOptions": {
+                      "compositeBarSettings": {
+                        "labelText": "",
+                        "columnSettings": []
+                      }
+                    }
+                  },
+                  {
+                    "columnMatch": "criticality",
+                    "formatter": 11
+                  }
+                ],
+                "labelSettings": [
+                  {
+                    "columnId": "editor"
+                  },
+                  {
+                    "columnId": "lasteditiondate"
+                  },
+                  {
+                    "columnId": "creator"
+                  },
+                  {
+                    "columnId": "count_",
+                    "label": "Count of Resources"
+                  }
+                ]
+              },
+              "sortBy": []
+            },
+            "name": "query - Overview - Mandatory Tags"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "overview"
+      },
+      "name": "group - Overview"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 9,
+            "content": {
+              "version": "KqlParameterItem/1.0",
+              "crossComponentResources": [
+                "{Subscriptions}"
+              ],
+              "parameters": [
+                {
+                  "id": "822895a2-572b-448e-99b4-738f22e285dd",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "editor",
+                  "type": 5,
+                  "isRequired": true,
+                  "multiSelect": true,
+                  "quote": "'",
+                  "delimiter": ",",
+                  "query": "resources   \n| where tags.editor != ''   \n| distinct tostring(tags.editor)",
+                  "crossComponentResources": [
+                    "{Subscriptions}"
+                  ],
+                  "value": [
+                    "value::all"
+                  ],
+                  "typeSettings": {
+                    "additionalResourceOptions": [
+                      "value::all"
+                    ],
+                    "showDefault": false
+                  },
+                  "timeContext": {
+                    "durationMs": 86400000
+                  },
+                  "defaultValue": "value::all",
+                  "queryType": 1,
+                  "resourceType": "microsoft.resourcegraph/resources"
+                },
+                {
+                  "id": "40790720-e11e-49d2-9370-12e5c73cbff6",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "lasteditiondate",
+                  "type": 5,
+                  "isRequired": true,
+                  "multiSelect": true,
+                  "quote": "'",
+                  "delimiter": ",",
+                  "query": "resources   \n| where tags.lasteditiondate != ''   \n| distinct tostring(tags.lasteditiondate)",
+                  "crossComponentResources": [
+                    "{Subscriptions}"
+                  ],
+                  "typeSettings": {
+                    "additionalResourceOptions": [
+                      "value::all"
+                    ],
+                    "showDefault": false
+                  },
+                  "timeContext": {
+                    "durationMs": 86400000
+                  },
+                  "defaultValue": "value::all",
+                  "queryType": 1,
+                  "resourceType": "microsoft.resourcegraph/resources"
+                },
+                {
+                  "id": "f380bba6-acca-4acd-bb7b-08634f11ffed",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "creator",
+                  "type": 5,
+                  "isRequired": true,
+                  "multiSelect": true,
+                  "quote": "'",
+                  "delimiter": ",",
+                  "query": "resources   \n| where tags.creator != ''   \n| distinct tostring(tags.creator)",
+                  "crossComponentResources": [
+                    "{Subscriptions}"
+                  ],
+                  "typeSettings": {
+                    "additionalResourceOptions": [
+                      "value::all"
+                    ],
+                    "showDefault": false
+                  },
+                  "timeContext": {
+                    "durationMs": 86400000
+                  },
+                  "defaultValue": "value::all",
+                  "queryType": 1,
+                  "resourceType": "microsoft.resourcegraph/resources"
+                },
+                {
+                  "id": "a7abbf0a-2bf7-4312-9915-f46f76b664e9",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "creationdate",
+                  "type": 5,
+                  "isRequired": true,
+                  "multiSelect": true,
+                  "quote": "'",
+                  "delimiter": ",",
+                  "query": "resources   \n| where tags.creationdate != ''   \n| distinct tostring(tags.creationdate)",
+                  "crossComponentResources": [
+                    "{Subscriptions}"
+                  ],
+                  "typeSettings": {
+                    "additionalResourceOptions": [
+                      "value::all"
+                    ],
+                    "showDefault": false
+                  },
+                  "timeContext": {
+                    "durationMs": 86400000
+                  },
+                  "defaultValue": "value::all",
+                  "queryType": 1,
+                  "resourceType": "microsoft.resourcegraph/resources"
+                }
+              ],
+              "style": "pills",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources"
+            },
+            "name": "parameters - Inventory"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where tags.editor != \"\" and tags.lasteditiondate != \"\" and tags.creator != \"\" and tags.creationdate != \"\"\n| where iif(\"{editor}\" == '', \"none\", \"({editor})\") contains_cs tags.editor \n| where iif(\"{lasteditiondate}\" == '', \"none\", \"({lasteditiondate})\") contains_cs tags.lasteditiondate \n| where iif(\"{creator}\" == '', \"none\", \"({creator})\") contains_cs tags.creator \n| where iif(\"{creationdate}\" == '', \"none\", \"({creationdate})\") contains_cs tags.creationdate \n| summarize count() by type",
+              "size": 1,
+              "title": "Tagged Resources Count by Type",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscriptions}"
+              ],
+              "visualization": "tiles",
+              "tileSettings": {
+                "showBorder": false,
+                "titleContent": {
+                  "columnMatch": "type",
+                  "formatter": 1
+                },
+                "leftContent": {
+                  "columnMatch": "count_",
+                  "formatter": 12,
+                  "formatOptions": {
+                    "palette": "auto"
+                  },
+                  "numberFormat": {
+                    "unit": 17,
+                    "options": {
+                      "maximumSignificantDigits": 3,
+                      "maximumFractionDigits": 2
+                    }
+                  }
+                }
+              }
+            },
+            "name": "query - Tagged Resources Count by Type"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where tags.editor != \"\" and tags.lasteditiondate != \"\" and tags.creator != \"\" and tags.creationdate != \"\"\n| where iif(\"{editor}\" == '', \"none\", \"({editor})\") contains_cs tags.editor \n| where iif(\"{lasteditiondate}\" == '', \"none\", \"({lasteditiondate})\") contains_cs tags.lasteditiondate \n| where iif(\"{creator}\" == '', \"none\", \"({creator})\") contains_cs tags.creator \n| where iif(\"{creationdate}\" == '', \"none\", \"({creationdate})\") contains_cs tags.creationdate \n| extend Details = pack_all()\n| project subscriptionId, resourceGroup, id, type, location, Details",
+              "size": 2,
+              "title": "Tagged Resources",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscriptions}"
+              ],
+              "visualization": "table",
+              "showExpandCollapseGrid": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "$gen_group",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": "Resource",
+                      "showIcon": true
+                    }
+                  },
+                  {
+                    "columnMatch": "subscriptionId",
+                    "formatter": 5
+                  },
+                  {
+                    "columnMatch": "resourceGroup",
+                    "formatter": 5
+                  },
+                  {
+                    "columnMatch": "id",
+                    "formatter": 5,
+                    "formatOptions": {
+                      "linkTarget": "Resource"
+                    }
+                  },
+                  {
+                    "columnMatch": "Details",
+                    "formatter": 7,
+                    "formatOptions": {
+                      "linkTarget": "CellDetails",
+                      "linkLabel": "🔍 View Details",
+                      "linkIsContextBlade": true
+                    }
+                  }
+                ],
+                "hierarchySettings": {
+                  "treeType": 1,
+                  "groupBy": [
+                    "subscriptionId",
+                    "resourceGroup"
+                  ],
+                  "expandTopLevel": true,
+                  "finalBy": "id"
+                }
+              },
+              "tileSettings": {
+                "showBorder": false,
+                "titleContent": {
+                  "columnMatch": "type",
+                  "formatter": 1
+                },
+                "leftContent": {
+                  "columnMatch": "count_",
+                  "formatter": 12,
+                  "formatOptions": {
+                    "palette": "auto"
+                  },
+                  "numberFormat": {
+                    "unit": 17,
+                    "options": {
+                      "maximumSignificantDigits": 3,
+                      "maximumFractionDigits": 2
+                    }
+                  }
+                }
+              }
+            },
+            "name": "query - Tagged Resources"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where \"{unTaggableResources}\" !has type \n| where tags.application == \"\" or tags.domain == \"\" or tags.environment == \"\" or tags.editor == \"\" or tags.lasteditiondate == \"\" or tags.deploymentmode == \"\" or tags.owner == \"\" or tags.criticality == \"\" or tags.creator == \"\"\n| extend Details = pack_all()\n| project subscriptionId, resourceGroup, id, type, location, Details",
+              "size": 2,
+              "title": "Untagged Resources ",
+              "showExportToExcel": true,
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscriptions}"
+              ],
+              "visualization": "table",
+              "showExpandCollapseGrid": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "$gen_group",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": "Resource",
+                      "linkIsContextBlade": false,
+                      "showIcon": true
+                    }
+                  },
+                  {
+                    "columnMatch": "subscriptionId",
+                    "formatter": 5
+                  },
+                  {
+                    "columnMatch": "resourceGroup",
+                    "formatter": 5
+                  },
+                  {
+                    "columnMatch": "id",
+                    "formatter": 5
+                  },
+                  {
+                    "columnMatch": "Details",
+                    "formatter": 7,
+                    "formatOptions": {
+                      "linkTarget": "CellDetails",
+                      "linkLabel": "🔍 View Details",
+                      "linkIsContextBlade": true
+                    }
+                  }
+                ],
+                "hierarchySettings": {
+                  "treeType": 1,
+                  "groupBy": [
+                    "subscriptionId",
+                    "resourceGroup"
+                  ],
+                  "expandTopLevel": true,
+                  "finalBy": "id"
+                }
+              },
+              "tileSettings": {
+                "showBorder": false,
+                "titleContent": {
+                  "columnMatch": "type",
+                  "formatter": 1
+                },
+                "leftContent": {
+                  "columnMatch": "count_",
+                  "formatter": 12,
+                  "formatOptions": {
+                    "palette": "auto"
+                  },
+                  "numberFormat": {
+                    "unit": 17,
+                    "options": {
+                      "maximumSignificantDigits": 3,
+                      "maximumFractionDigits": 2
+                    }
+                  }
+                }
+              }
+            },
+            "name": "query - Untagged Resources "
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "inventory"
+      },
+      "name": "group - Inventory"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "traces\n| where message contains \"tag with user\"\n| extend resourceId = substring(message, indexof(message, \"/subscriptions/\"))\n| extend type = substring(resourceId, indexof(resourceId, \"/providers/\")+11)\n| extend type = case(\ntype contains 'microsoft.operationalinsights/workspaces', 'Log Analytics Workspaces',\ntype contains 'microsoft.netapp/netappaccounts', 'NetApp Accounts',\ntype contains 'microsoft.web/serverfarms', \"App Service Plans\",\ntype contains 'microsoft.web/sites', \"App Services\",\ntype contains \"microsoft.compute/virtualmachines\", \"Azure Compute\",\ntype contains \"microsoft.logic/workflows\", \"LogicApps\",\ntype contains 'microsoft.keyvault/vaults', \"Key Vaults\",\ntype contains 'microsoft.storage/storageaccounts', \"Storage Accounts\",\ntype contains 'microsoft.compute/availabilitysets', 'Availability Sets',\ntype contains 'microsoft.insights/components','Application Insights',\ntype contains 'microsoft.desktopvirtualization/applicationgroups', 'WVD Application Groups',\ntype contains 'microsoft.desktopvirtualization/workspaces', 'WVD Workspaces',\ntype contains 'microsoft.desktopvirtualization/hostpools', 'WVD Hostpools',\ntype contains 'microsoft.recoveryservices/vaults', 'Backup Vaults',\ntype contains 'microsoft.insights/webtests', 'URL Web Tests',\ntype contains 'microsoft.web/connections', 'LogicApp Connectors',\ntype contains 'microsoft.web/customapis','LogicApp API Connectors',\ntype contains 'microsoft.managedidentity/userassignedidentities','Managed Identities',\ntype contains 'microsoft.storagesync/storagesyncservices', 'Azure File Sync',\ntype contains 'microsoft.hybridcompute/machines', 'ARC Machines',\ntype contains 'Microsoft.EventHub/namespaces', 'Event Hub Namespaces',\ntype contains 'Microsoft.EventGrid/systemTopics', 'Event Grid System Topics',\ntype contains 'Microsoft.Sql', 'SQL Resources',\ntype contains 'Microsoft.HDInsight/clusters', 'HDInsight Clusters',\ntype contains 'microsoft.insights/workbooks', 'Monitor Workbooks',\ntype contains 'microsoft.devtestlab', 'DevTest Labs Resources',\ntype contains 'microsoft.containerinstance', 'Container Instances Resources',\ntype contains 'microsoft.portal/dashboards', 'Azure Dashboards',\ntype contains 'microsoft.containerregistry/registries', 'Container Registry',\ntype contains 'microsoft.automation', 'Automation Resources',\ntype contains 'microsoft.containerservice/managedclusters', 'AKS Clusters',\ntype contains 'sendgrid.email/accounts', 'SendGrid Accounts',\ntype contains 'microsoft.datafactory/factories', 'Data Factory',\ntype contains 'microsoft.databricks/workspaces', 'Databricks Workspaces',\ntype contains 'microsoft.machinelearningservices/workspaces', 'Machine Learnings Workspaces',\ntype contains 'microsoft.compute', 'Compute Resources',\ntype contains 'microsoft.alertsmanagement/smartdetectoralertrules', 'Smart Detector Alert Rules',\ntype contains 'microsoft.apimanagement/service', 'API Management Services',\ntype contains 'microsoft.dbforpostgresql', 'PostgreSQL Resources',\ntype contains 'microsoft.scheduler/jobcollections', 'Scheduler Job Collections',\ntype contains 'microsoft.eventgrid/topics', 'Event Grid Topics',\ntype contains 'microsoft.visualstudio/account', 'Azure DevOps Organization',\ntype contains 'microsoft.network/virtualnetworks', 'Virtual Networks',\ntype contains 'Microsoft.Network/routeTables', 'Route Tables',\ntype contains 'microsoft.network/networksecuritygroups', 'Network Security Groups',\ntype contains 'microsoft.network/applicationsecuritygroups', 'Application Security Groups',\ntype contains 'microsoft.network/applicationgateways', 'Application Gateways',\ntype contains 'microsoft.network/publicipaddresses', 'Public Ip Addresses',\ntype contains 'microsoft.network/', 'Other Network Resources',\ntype contains 'microsoft.classic', 'ASM Obsolete Resources',\nstrcat(\"Not Translated: \", type))\n| summarize count() by type\n//| where type !has \"Not Translated\"",
+              "size": 0,
+              "title": "Taggued actions by resource types",
+              "timeContext": {
+                "durationMs": 86400000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components",
+              "crossComponentResources": [
+                "<AppInsightId>"
+              ],
+              "visualization": "tiles",
+              "tileSettings": {
+                "showBorder": false,
+                "titleContent": {
+                  "columnMatch": "type",
+                  "formatter": 1
+                },
+                "leftContent": {
+                  "columnMatch": "count_",
+                  "formatter": 12,
+                  "formatOptions": {
+                    "palette": "auto"
+                  },
+                  "numberFormat": {
+                    "unit": 17,
+                    "options": {
+                      "maximumSignificantDigits": 3,
+                      "maximumFractionDigits": 2
+                    }
+                  }
+                }
+              }
+            },
+            "name": "query - Overview Resource Taggued by type"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "traces\n| extend hour = floor(timestamp % 1d, 1h)\n| where message !contains_cs \"Executed 'Functions.TagRemediate'\"\n| extend action = case(message contains_cs 'tag with user', 'Tag',\n                        severityLevel == 2 and \n                        message !contains_cs 'is queuing requests as there are no available runspace' and\n                        message !contains_cs 'Skipping event as last writer is the function itself', 'Warning',\n                    severityLevel == 3, 'Error',\n                    'Other Information')\n| where action in ('Tag', 'Warning', 'Error')\n| summarize count() by bin(timestamp, 30m), action\n| render timechart",
+              "size": 0,
+              "title": " Tag activity",
+              "timeContext": {
+                "durationMs": 86400000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components",
+              "crossComponentResources": [
+                "<AppInsightId>"
+              ],
+              "gridSettings": {
+                "rowLimit": 15
+              }
+            },
+            "name": "query - Tag activity"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "remediationActivity"
+      },
+      "name": "group - remediationActivity"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "traces\n| where message contains \"tag with user\"\n| extend resourceId = substring(message, indexof(message, \"/subscriptions/\"))\n| project timestamp, resourceId, operation_Id, severityLevel, message\n| sort by timestamp desc",
+              "showQuery": true,
+              "size": 0,
+              "showAnalytics": true,
+              "title": "Last taggued resources",
+              "timeContext": {
+                "durationMs": 86400000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components",
+              "crossComponentResources": [
+                "<AppInsightId>"
+              ],
+              "gridSettings": {
+                "rowLimit": 15
+              }
+            },
+            "name": "query - Last taggued resources"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "traces\n| where severityLevel == 2\n| extend resourceId = substring(message, indexof(message, \"/subscriptions/\"))\n| project timestamp, resourceId, operation_Id, severityLevel, message\n| sort by timestamp desc",
+              "showQuery": true,
+              "size": 0,
+              "showAnalytics": true,
+              "title": "Warning Traces",
+              "noDataMessageStyle": 3,
+              "timeContext": {
+                "durationMs": 86400000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components",
+              "crossComponentResources": [
+                "<AppInsightId>"
+              ],
+              "gridSettings": {
+                "rowLimit": 15
+              }
+            },
+            "name": "query - Warning"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "traces\n| where severityLevel == \"3\"\n| sort by timestamp desc",
+              "showQuery": true,
+              "size": 0,
+              "showAnalytics": true,
+              "title": "Error in traces",
+              "noDataMessageStyle": 3,
+              "timeContext": {
+                "durationMs": 86400000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components",
+              "crossComponentResources": [
+                "<AppInsightId>"
+              ],
+              "gridSettings": {
+                "rowLimit": 15
+              }
+            },
+            "name": "query - Error"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "remediationDetail"
+      },
+      "name": "group - remediationDetail"
+    }
+  ],
+  "fallbackResourceIds": [
+    "azure monitor"
+  ],
+  "workbookPin": "query - Tag Compliancy by Resource Count",
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}

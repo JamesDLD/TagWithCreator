@@ -144,6 +144,10 @@
         "resourceId": {
             "type": "string",
             "value": "[resourceId('Microsoft.Web/sites', parameters('functionName'))]"
+        },
+        "appInsightsId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Insights/components', parameters('appInsightsName'))]"
         }
     }
 }
