@@ -18,17 +18,7 @@
     "variables": {
         "appInsights_tags": {
             "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', parameters('functionName'))]": "Resource",
-            "displayName": "AppInsightsComponent",
-            "deploymentmode": "armtemplate"
-        },
-        "serverfarms_tags": {
-            "deploymentmode": "armtemplate"
-        },
-        "storageAccounts_tags": {
-            "deploymentmode": "armtemplate"
-        },
-        "sites_tags": {
-            "deploymentmode": "armtemplate"
+            "displayName": "AppInsightsComponent"
         }
     },
     "resources": [
@@ -37,8 +27,12 @@
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-06-01",
             "location": "[resourceGroup().location]",
-            "tags": "[union(resourceGroup().tags,variables('storageAccounts_tags'))]",
             "kind": "StorageV2",
+            "properties": {
+                "minimumTlsVersion": "TLS1_2",
+                "allowBlobPublicAccess": false,
+                "supportsHttpsTrafficOnly": true
+            },
             "sku": {
                 "name": "Standard_LRS",
                 "tier": "Standard"
@@ -49,7 +43,6 @@
             "apiVersion": "2018-02-01",
             "name": "[parameters('appServicePlanName')]",
             "location": "[resourceGroup().location]",
-            "tags": "[union(resourceGroup().tags,variables('serverfarms_tags'))]",
             "sku": {
                 "name": "Y1",
                 "tier": "Dynamic",
@@ -62,7 +55,7 @@
             "name": "[parameters('appInsightsName')]",
             "type": "Microsoft.Insights/components",
             "location": "[resourceGroup().location]",
-            "tags": "[union(resourceGroup().tags,variables('appInsights_tags'))]",
+            "tags": "[variables('appInsights_tags')]",
             "properties": {
                 "applicationId": "[parameters('appInsightsName')]"
             }
@@ -72,7 +65,6 @@
             "type": "Microsoft.Web/sites",
             "apiVersion": "2018-11-01",
             "location": "[resourceGroup().location]",
-            "tags": "[union(resourceGroup().tags,variables('sites_tags'))]",
             "kind": "functionapp",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",

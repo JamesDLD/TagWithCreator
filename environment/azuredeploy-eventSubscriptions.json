@@ -20,9 +20,6 @@
         }
     },
     "variables": {
-        "systemTopics_tags": {
-            "deploymentmode": "armtemplate"
-        }
     },
     "resources": [
         {
@@ -30,7 +27,6 @@
             "apiVersion": "2020-04-01-preview",
             "name": "[parameters('systemTopicsName')]",
             "location": "global",
-            "tags": "[union(resourceGroup().tags,variables('systemTopics_tags'))]",
             "properties": {
                 "source": "[subscription().id]",
                 "topicType": "microsoft.resources.subscriptions"

@@ -2,17 +2,18 @@
 $env = "sbx"
 $AzureRmSubscriptionName = "sub-$env-001"             # <-- REPLACE the variable values with your own values.
 $resourceGroupName = "rg-in-$env-monitor-001"         # <-- 
-$functionName = "func-in-$env-monitor-001"            # <--
+$azFunctionName = "func-in-$env-monitor-001"          # <-- The Azure App Function Name
 $appServicePlanName = "plan-in-$env-monitor-001"      # <--
-$storageAccountName = "stin$($env)monitor001"            # <-- Ensure the storage account name is unique
+$storageAccountName = "stin$($env)funcmonitor001"         # <-- Ensure the storage account name is unique
 $appInsightsName = "appi-in-$env-monitor-001"         # <--
 $systemTopicsName = "evgst-in-$env-monitor-001"       # <--
-$location = "francecentral"                          # <-- Ensure that the location is a valid Azure location
+$location = "francecentral"                           # <-- Ensure that the location is a valid Azure location
+$functionName = "TagWithCreator"                      # <-- The Function Name that will tag
 $params = @{
     storageAccountName = $storageAccountName.ToLower()
     appServicePlanName = $appServicePlanName
     appInsightsName    = $appInsightsName
-    functionName       = $functionName
+    functionName       = $azFunctionName
 }
 
 ## Connectivity
@@ -53,14 +54,14 @@ Compress-Archive -Path * -DestinationPath ..\environment\functions.zip -Force -V
 Pop-Location
 
 $file = (Get-ChildItem .\functions.zip).FullName
-Publish-AzWebApp -ResourceGroupName $resourceGroupName -Name $functionName -ArchivePath $file -Verbose -Force
+Publish-AzWebApp -ResourceGroupName $resourceGroupName -Name $azFunctionName -ArchivePath $file -Verbose -Force
 Remove-Item $file -Force
 
 # Deploy the EventGrid system Topic, feature request to use : resourceUrisToExclude --> https://feedback.azure.com/forums/909934-azure-event-grid/suggestions/42036640-support-stringnotcontains-advanced-filters-on-even?WT.mc_id=AZ-MVP-5003548
 $params = @{
     resourceId                = $output.Outputs.resourceId.Value 
     systemTopicsName          = $systemTopicsName
-    eventGridSubscriptionName = "TagWithCreator"
+    eventGridSubscriptionName = $functionName
 }
 
 New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName `
@@ -70,12 +71,13 @@ New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName `
 
 ## Deploy the Azure Monitor Workbook
 $workbookDisplayName = "Compliance - Tag Workbook - $env"
-$workbookSourceId = "Azure Monitor"
+$workbookSourceId = "azure monitor"
 $workbookType = "workbook"
 #$workbookId = "Existong-Workbok-GUID-To-Use-If-UpdateInplace"
 $workbookSerializedData = (Get-Content -Path ".\azuredeploy-workbook-gallery.json") `
     -replace "<AppInsightId>", $output.Outputs.appInsightsId.Value `
     -replace "<SubscriptionId>", $Subscription.Subscription.Id `
+    -replace "<FunctionName>", $functionName `
 | ConvertFrom-Json
 
 New-AzResourceGroupDeployment -Name $(("$workbookType-$workbookDisplayName").replace(' ', '')) -ResourceGroupName $resourceGroupName `
@@ -85,4 +87,3 @@ New-AzResourceGroupDeployment -Name $(("$workbookType-$workbookDisplayName").rep
     -workbookSourceId $workbookSourceId `
     -workbookSerializedData ($workbookSerializedData | ConvertTo-Json -Depth 20) `
     -Confirm -ErrorAction Stop
-
