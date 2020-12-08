@@ -284,6 +284,126 @@
             "type": 9,
             "content": {
               "version": "KqlParameterItem/1.0",
+              "parameters": [
+                {
+                  "id": "43e68399-0c5e-480f-a015-0a34290a1f06",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "resourceTypes",
+                  "label": "Resource Type",
+                  "type": 7,
+                  "isRequired": true,
+                  "multiSelect": true,
+                  "quote": "'",
+                  "delimiter": ",",
+                  "value": [
+                    "microsoft.compute/virtualmachines"
+                  ],
+                  "typeSettings": {
+                    "additionalResourceOptions": [
+                      "value::all"
+                    ],
+                    "includeAll": true,
+                    "showDefault": false
+                  },
+                  "timeContext": {
+                    "durationMs": 86400000
+                  },
+                  "defaultValue": "value::all"
+                }
+              ],
+              "style": "pills",
+              "queryType": 0,
+              "resourceType": "microsoft.resourcegraph/resources"
+            },
+            "name": "parameters - Inventory - Type"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where tags.creationdate != \"\" and type in ({resourceTypes})\n| extend creationdate = todatetime(tostring(tags.creationdate)) \n| sort by creationdate asc\n| summarize [\"Creation count\"]=count() by bin(creationdate, 24h), subscriptionId, type\n| extend creationday = format_datetime(creationdate, 'dd-MM-yy')\n| sort by creationday asc\n| project [\"Subscription\"]=subscriptionId, [\"Resource Type\"]=type, [\"Creation Day\"]=creationday, [\"Creation count\"]",
+              "size": 1,
+              "title": "Resource created over the time",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscriptions}"
+              ],
+              "visualization": "table",
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "Subscription",
+                    "formatter": 15,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  },
+                  {
+                    "columnMatch": "Resource Type",
+                    "formatter": 16,
+                    "formatOptions": {
+                      "showIcon": true
+                    }
+                  },
+                  {
+                    "columnMatch": "subscriptionId",
+                    "formatter": 15,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  }
+                ],
+                "rowLimit": 50
+              },
+              "tileSettings": {
+                "showBorder": false,
+                "titleContent": {
+                  "columnMatch": "type",
+                  "formatter": 1
+                },
+                "leftContent": {
+                  "columnMatch": "count_",
+                  "formatter": 12,
+                  "formatOptions": {
+                    "palette": "auto"
+                  },
+                  "numberFormat": {
+                    "unit": 17,
+                    "options": {
+                      "maximumSignificantDigits": 3,
+                      "maximumFractionDigits": 2
+                    }
+                  }
+                }
+              },
+              "graphSettings": {
+                "type": 0,
+                "topContent": {
+                  "columnMatch": "creationdate",
+                  "formatter": 1
+                },
+                "centerContent": {
+                  "columnMatch": "VMs created",
+                  "formatter": 1,
+                  "numberFormat": {
+                    "unit": 17,
+                    "options": {
+                      "maximumSignificantDigits": 3,
+                      "maximumFractionDigits": 2
+                    }
+                  }
+                }
+              }
+            },
+            "name": "query - Resource created over the time"
+          },
+          {
+            "type": 9,
+            "content": {
+              "version": "KqlParameterItem/1.0",
               "crossComponentResources": [
                 "{Subscriptions}"
               ],
@@ -393,7 +513,10 @@
                   },
                   "defaultValue": "value::all",
                   "queryType": 1,
-                  "resourceType": "microsoft.resourcegraph/resources"
+                  "resourceType": "microsoft.resourcegraph/resources",
+                  "value": [
+                    "value::all"
+                  ]
                 }
               ],
               "style": "pills",
@@ -406,7 +529,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "resources\n| where tags.editor != \"\" and tags.lasteditiondate != \"\" and tags.creator != \"\" and tags.creationdate != \"\"\n| where iif(\"{editor}\" == '', \"none\", \"({editor})\") contains_cs tags.editor \n| where iif(\"{lasteditiondate}\" == '', \"none\", \"({lasteditiondate})\") contains_cs tags.lasteditiondate \n| where iif(\"{creator}\" == '', \"none\", \"({creator})\") contains_cs tags.creator \n| where iif(\"{creationdate}\" == '', \"none\", \"({creationdate})\") contains_cs tags.creationdate \n| extend type = case(\ntype contains 'microsoft.operationalinsights/workspaces', 'Log Analytics Workspaces',\ntype contains 'microsoft.netapp/netappaccounts', 'NetApp Accounts',\ntype contains 'microsoft.web/serverfarms', \"App Service Plans\",\ntype contains 'microsoft.web/sites', \"App Services\",\ntype contains \"microsoft.compute/virtualmachines\", \"Azure Compute\",\ntype contains \"microsoft.logic/workflows\", \"LogicApps\",\ntype contains 'microsoft.keyvault/vaults', \"Key Vaults\",\ntype contains 'microsoft.storage/storageaccounts', \"Storage Accounts\",\ntype contains 'microsoft.compute/availabilitysets', 'Availability Sets',\ntype contains 'microsoft.insights/components','Application Insights',\ntype contains 'microsoft.desktopvirtualization/applicationgroups', 'WVD Application Groups',\ntype contains 'microsoft.desktopvirtualization/workspaces', 'WVD Workspaces',\ntype contains 'microsoft.desktopvirtualization/hostpools', 'WVD Hostpools',\ntype contains 'microsoft.recoveryservices/vaults', 'Backup Vaults',\ntype contains 'microsoft.insights/webtests', 'URL Web Tests',\ntype contains 'microsoft.web/connections', 'LogicApp Connectors',\ntype contains 'microsoft.web/customapis','LogicApp API Connectors',\ntype contains 'microsoft.managedidentity/userassignedidentities','Managed Identities',\ntype contains 'microsoft.storagesync/storagesyncservices', 'Azure File Sync',\ntype contains 'microsoft.hybridcompute/machines', 'ARC Machines',\ntype contains 'Microsoft.EventHub/namespaces', 'Event Hub Namespaces',\ntype contains 'Microsoft.EventGrid/systemTopics', 'Event Grid System Topics',\ntype contains 'Microsoft.Sql', 'SQL Resources',\ntype contains 'Microsoft.HDInsight/clusters', 'HDInsight Clusters',\ntype contains 'microsoft.insights/workbooks', 'Monitor Workbooks',\ntype contains 'microsoft.devtestlab', 'DevTest Labs Resources',\ntype contains 'microsoft.containerinstance', 'Container Instances Resources',\ntype contains 'microsoft.portal/dashboards', 'Azure Dashboards',\ntype contains 'microsoft.containerregistry/registries', 'Container Registry',\ntype contains 'microsoft.automation', 'Automation Resources',\ntype contains 'microsoft.containerservice/managedclusters', 'AKS Clusters',\ntype contains 'sendgrid.email/accounts', 'SendGrid Accounts',\ntype contains 'microsoft.datafactory/factories', 'Data Factory',\ntype contains 'microsoft.databricks/workspaces', 'Databricks Workspaces',\ntype contains 'microsoft.machinelearningservices/workspaces', 'Machine Learnings Workspaces',\ntype contains 'microsoft.compute', 'Compute Resources',\ntype contains 'microsoft.alertsmanagement/smartdetectoralertrules', 'Smart Detector Alert Rules',\ntype contains 'microsoft.apimanagement/service', 'API Management Services',\ntype contains 'microsoft.dbforpostgresql', 'PostgreSQL Resources',\ntype contains 'microsoft.scheduler/jobcollections', 'Scheduler Job Collections',\ntype contains 'microsoft.eventgrid/topics', 'Event Grid Topics',\ntype contains 'microsoft.visualstudio/account', 'Azure DevOps Organization',\ntype contains 'microsoft.network/virtualnetworks', 'Virtual Networks',\ntype contains 'Microsoft.Network/routeTables', 'Route Tables',\ntype contains 'microsoft.network/networksecuritygroups', 'Network Security Groups',\ntype contains 'microsoft.network/applicationsecuritygroups', 'Application Security Groups',\ntype contains 'microsoft.network/applicationgateways', 'Application Gateways',\ntype contains 'microsoft.network/publicipaddresses', 'Public Ip Addresses',\ntype contains 'microsoft.network/', 'Other Network Resources',\ntype contains 'microsoft.classic', 'ASM Obsolete Resources',\nstrcat(\"Not Translated: \", type))\n| summarize count() by type",
+              "query": "resources\n| where tags.editor != \"\" and tags.lasteditiondate != \"\" and tags.creator != \"\" and tags.creationdate != \"\"\n| where iif(\"{editor}\" == '', \"none\", \"({editor})\") contains_cs tags.editor \n| where iif(\"{lasteditiondate}\" == '', \"none\", \"({lasteditiondate})\") contains_cs tags.lasteditiondate \n| where iif(\"{creator}\" == '', \"none\", \"({creator})\") contains_cs tags.creator \n| where iif(\"{creationdate}\" == '', \"none\", \"({creationdate})\") contains_cs tags.creationdate \n| summarize count() by type",
               "size": 1,
               "title": "Tagged Resources Count by Type",
               "queryType": 1,
@@ -416,10 +539,12 @@
               ],
               "visualization": "tiles",
               "tileSettings": {
-                "showBorder": false,
                 "titleContent": {
                   "columnMatch": "type",
-                  "formatter": 1
+                  "formatter": 16,
+                  "formatOptions": {
+                    "showIcon": true
+                  }
                 },
                 "leftContent": {
                   "columnMatch": "count_",
@@ -430,11 +555,13 @@
                   "numberFormat": {
                     "unit": 17,
                     "options": {
-                      "maximumSignificantDigits": 3,
-                      "maximumFractionDigits": 2
+                      "style": "decimal",
+                      "maximumFractionDigits": 2,
+                      "maximumSignificantDigits": 3
                     }
                   }
-                }
+                },
+                "showBorder": false
               }
             },
             "name": "query - Tagged Resources Count by Type"
@@ -624,7 +751,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "traces\n| where message contains \"tag with user\"\n| extend resourceId = substring(message, indexof(message, \"/subscriptions/\"))\n| extend type = substring(resourceId, indexof(resourceId, \"/providers/\")+11)\n| extend type = case(\ntype contains 'microsoft.operationalinsights/workspaces', 'Log Analytics Workspaces',\ntype contains 'microsoft.netapp/netappaccounts', 'NetApp Accounts',\ntype contains 'microsoft.web/serverfarms', \"App Service Plans\",\ntype contains 'microsoft.web/sites', \"App Services\",\ntype contains \"microsoft.compute/virtualmachines\", \"Azure Compute\",\ntype contains \"microsoft.logic/workflows\", \"LogicApps\",\ntype contains 'microsoft.keyvault/vaults', \"Key Vaults\",\ntype contains 'microsoft.storage/storageaccounts', \"Storage Accounts\",\ntype contains 'microsoft.compute/availabilitysets', 'Availability Sets',\ntype contains 'microsoft.insights/components','Application Insights',\ntype contains 'microsoft.desktopvirtualization/applicationgroups', 'WVD Application Groups',\ntype contains 'microsoft.desktopvirtualization/workspaces', 'WVD Workspaces',\ntype contains 'microsoft.desktopvirtualization/hostpools', 'WVD Hostpools',\ntype contains 'microsoft.recoveryservices/vaults', 'Backup Vaults',\ntype contains 'microsoft.insights/webtests', 'URL Web Tests',\ntype contains 'microsoft.web/connections', 'LogicApp Connectors',\ntype contains 'microsoft.web/customapis','LogicApp API Connectors',\ntype contains 'microsoft.managedidentity/userassignedidentities','Managed Identities',\ntype contains 'microsoft.storagesync/storagesyncservices', 'Azure File Sync',\ntype contains 'microsoft.hybridcompute/machines', 'ARC Machines',\ntype contains 'Microsoft.EventHub/namespaces', 'Event Hub Namespaces',\ntype contains 'Microsoft.EventGrid/systemTopics', 'Event Grid System Topics',\ntype contains 'Microsoft.Sql', 'SQL Resources',\ntype contains 'Microsoft.HDInsight/clusters', 'HDInsight Clusters',\ntype contains 'microsoft.insights/workbooks', 'Monitor Workbooks',\ntype contains 'microsoft.devtestlab', 'DevTest Labs Resources',\ntype contains 'microsoft.containerinstance', 'Container Instances Resources',\ntype contains 'microsoft.portal/dashboards', 'Azure Dashboards',\ntype contains 'microsoft.containerregistry/registries', 'Container Registry',\ntype contains 'microsoft.automation', 'Automation Resources',\ntype contains 'microsoft.containerservice/managedclusters', 'AKS Clusters',\ntype contains 'sendgrid.email/accounts', 'SendGrid Accounts',\ntype contains 'microsoft.datafactory/factories', 'Data Factory',\ntype contains 'microsoft.databricks/workspaces', 'Databricks Workspaces',\ntype contains 'microsoft.machinelearningservices/workspaces', 'Machine Learnings Workspaces',\ntype contains 'microsoft.compute', 'Compute Resources',\ntype contains 'microsoft.alertsmanagement/smartdetectoralertrules', 'Smart Detector Alert Rules',\ntype contains 'microsoft.apimanagement/service', 'API Management Services',\ntype contains 'microsoft.dbforpostgresql', 'PostgreSQL Resources',\ntype contains 'microsoft.scheduler/jobcollections', 'Scheduler Job Collections',\ntype contains 'microsoft.eventgrid/topics', 'Event Grid Topics',\ntype contains 'microsoft.visualstudio/account', 'Azure DevOps Organization',\ntype contains 'microsoft.network/virtualnetworks', 'Virtual Networks',\ntype contains 'Microsoft.Network/routeTables', 'Route Tables',\ntype contains 'microsoft.network/networksecuritygroups', 'Network Security Groups',\ntype contains 'microsoft.network/applicationsecuritygroups', 'Application Security Groups',\ntype contains 'microsoft.network/applicationgateways', 'Application Gateways',\ntype contains 'microsoft.network/publicipaddresses', 'Public Ip Addresses',\ntype contains 'microsoft.network/', 'Other Network Resources',\ntype contains 'microsoft.classic', 'ASM Obsolete Resources',\nstrcat(\"Not Translated: \", type))\n| summarize count() by type\n//| where type !has \"Not Translated\"",
+              "query": "traces\n| where message contains \"tag with user\"\n| extend resourceId = substring(message, indexof(message, \"/subscriptions/\"))\n| extend type = substring(resourceId, indexof(resourceId, \"/providers/\")+11)\n| extend type = strcat(split(type, '/')[0],'/',split(type, '/')[1])\n| summarize count() by type",
               "size": 1,
               "title": "Taggued actions by resource types",
               "timeContext": {
@@ -637,10 +764,12 @@
               ],
               "visualization": "tiles",
               "tileSettings": {
-                "showBorder": false,
                 "titleContent": {
                   "columnMatch": "type",
-                  "formatter": 1
+                  "formatter": 16,
+                  "formatOptions": {
+                    "showIcon": true
+                  }
                 },
                 "leftContent": {
                   "columnMatch": "count_",
@@ -655,7 +784,8 @@
                       "maximumFractionDigits": 2
                     }
                   }
-                }
+                },
+                "showBorder": false
               }
             },
             "name": "query - Overview Resource Taggued by type"

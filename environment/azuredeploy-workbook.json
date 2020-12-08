@@ -24,7 +24,7 @@
     },
     "workbookId": {
       "type": "string",
-      "defaultValue": "[newGuid()]",
+      "defaultValue": "[guid('TagInventory', subscription().subscriptionId)]",
       "metadata": {
         "description": "The unique guid for this workbook instance"
       }

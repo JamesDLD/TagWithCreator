@@ -1,6 +1,6 @@
 ## Variable
-$env = "sbx"
-$AzureRmSubscriptionName = "sub-$env-001"             # <-- REPLACE the variable values with your own values.
+$env = "mvp"
+$AzureRmSubscriptionName = "sub-$env-001"           # <-- REPLACE the variable values with your own values.
 $resourceGroupName = "rg-in-$env-monitor-001"         # <-- 
 $azFunctionName = "func-in-$env-monitor-001"          # <-- The Azure App Function Name
 $appServicePlanName = "plan-in-$env-monitor-001"      # <--
