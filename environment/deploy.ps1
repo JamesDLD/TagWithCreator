@@ -1,14 +1,14 @@
 ## Variable
 $env = "mvp"
-$AzureRmSubscriptionName = "sub-$env-001"           # <-- REPLACE the variable values with your own values.
-$resourceGroupName = "rg-in-$env-monitor-001"         # <-- 
-$azFunctionName = "func-in-$env-monitor-001"          # <-- The Azure App Function Name
-$appServicePlanName = "plan-in-$env-monitor-001"      # <--
-$storageAccountName = "stin$($env)funcmonitor001"         # <-- Ensure the storage account name is unique
-$appInsightsName = "appi-in-$env-monitor-001"         # <--
-$systemTopicsName = "evgst-in-$env-monitor-001"       # <--
+$AzureRmSubscriptionName = "$env-sub1"           # <-- REPLACE the variable values with your own values.
+$resourceGroupName = "rg-infra-$env-mon-rg1"         # <-- 
+$azFunctionName = "func-infra-$env-mon-001"          # <-- The Azure App Function Name
+$appServicePlanName = "plan-infra-$env-mon-001"      # <--
+$storageAccountName = "stinfra$($env)funcmon001"         # <-- Ensure the storage account name is unique
+$appInsightsName = "appi-infra-$env-mon-001"         # <--
+$systemTopicsName = "evgst-infra-$env-mon-001"       # <--
 $location = "francecentral"                           # <-- Ensure that the location is a valid Azure location
-$functionName = "TagWithCreator"                      # <-- The Function Name that will tag
+$functionName = "TagManagement"                      # <-- The Function Name that will tag
 $params = @{
     storageAccountName = $storageAccountName.ToLower()
     appServicePlanName = $appServicePlanName

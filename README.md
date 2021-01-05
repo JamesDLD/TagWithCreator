@@ -1,6 +1,6 @@
-# TagWithCreator
+# TagManagement
 
-Blog posted at [Premier Field Engineering Tech Community](https://aka.ms/AnthonyWatherston)
+Inspired from the Function TagWithCreator published in the Blog post [Premier Field Engineering Tech Community](https://aka.ms/AnthonyWatherston)
 
 Any issues you can raise them in this repository.
 

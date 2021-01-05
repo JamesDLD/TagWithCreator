@@ -32,9 +32,19 @@
             "id": "c7025fe3-4f4a-4657-b950-027d3a5276eb",
             "version": "KqlParameterItem/1.0",
             "name": "unTaggableResources",
-            "type": 1,
+            "type": 2,
+            "multiSelect": true,
+            "quote": "'",
+            "delimiter": ",",
             "query": "{\"version\":\"1.0.0\",\"content\":\"[\\\"Microsoft.Compute/virtualMachines/extensions\\\",\\\"microsoft.insights/autoscalesettings\\\",\\\"Microsoft.ClassicNetwork/virtualNetworks\\\",\\\"microsoft.classic\\\",\\\"microsoft.classicstorage/storageaccounts\\\",\\\"sendgrid.email/accounts\\\"]\",\"transformers\":null}",
             "isHiddenWhenLocked": true,
+            "typeSettings": {
+              "additionalResourceOptions": [
+                "value::all"
+              ],
+              "showDefault": false
+            },
+            "defaultValue": "value::all",
             "queryType": 8
           }
         ],
@@ -102,7 +112,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "Resources \n| where \"{unTaggableResources}\" !has type \n| summarize count(type)",
+              "query": "Resources \n| where type !in~ ({unTaggableResources}) \n| summarize count(type)",
               "size": 4,
               "title": "Count of All taggable Resources",
               "queryType": 1,
@@ -131,7 +141,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "resources\n| where \"{unTaggableResources}\" !has type \n| extend compliant = iff(tags.editor == \"\" or tags.lasteditiondate == \"\" or tags.creationdate == \"\" or tags.creator == \"\",\"Not Compliant\", \"Compliant\")\n| summarize count(type) by compliant",
+              "query": "resources\n| where type !in~ ({unTaggableResources})\n| extend compliant = iff(tags.editor == \"\" or tags.lasteditiondate == \"\" or tags.creationdate == \"\" or tags.creator == \"\",\"Not Compliant\", \"Compliant\")\n| summarize count(type) by compliant",
               "size": 0,
               "title": "Tag Compliancy by Resource Count",
               "queryType": 1,
@@ -183,7 +193,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "resources\n| where \"{unTaggableResources}\" !has type \n| extend editor = iff(tags.editor == '', \"Unavailable\", \"Available\")\n| extend lasteditiondate = iff(tags.lasteditiondate == '', \"Unavailable\", \"Available\")\n| extend creator = iff(tags.creator == '', \"Unavailable\", \"Available\")\n| extend creationdate = iff(tags.creationdate == '', \"Unavailable\", \"Available\")\n| summarize count() by editor,lasteditiondate,creator,creationdate",
+              "query": "resources\n| where type !in~ ({unTaggableResources})\n| extend editor = iff(tags.editor == '', \"Unavailable\", \"Available\")\n| extend lasteditiondate = iff(tags.lasteditiondate == '', \"Unavailable\", \"Available\")\n| extend creator = iff(tags.creator == '', \"Unavailable\", \"Available\")\n| extend creationdate = iff(tags.creationdate == '', \"Unavailable\", \"Available\")\n| summarize count() by editor,lasteditiondate,creator,creationdate",
               "size": 0,
               "title": "Overview - Mandatory Tags",
               "noDataMessageStyle": 5,
@@ -654,7 +664,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "resources\n| where \"{unTaggableResources}\" !has type \n| where tags.application == \"\" or tags.domain == \"\" or tags.environment == \"\" or tags.editor == \"\" or tags.lasteditiondate == \"\" or tags.deploymentmode == \"\" or tags.owner == \"\" or tags.criticality == \"\" or tags.creator == \"\"\n| extend Details = pack_all()\n| project subscriptionId, resourceGroup, id, type, location, Details",
+              "query": "resources\n| where type !in~ ({unTaggableResources})\n| where tags.application == \"\" or tags.domain == \"\" or tags.environment == \"\" or tags.editor == \"\" or tags.lasteditiondate == \"\" or tags.deploymentmode == \"\" or tags.owner == \"\" or tags.criticality == \"\" or tags.creator == \"\"\n| extend Details = pack_all()\n| project subscriptionId, resourceGroup, id, type, location, Details",
               "size": 2,
               "title": "Untagged Resources ",
               "showExportToExcel": true,
